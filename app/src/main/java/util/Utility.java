@@ -81,12 +81,15 @@ public class Utility {
             String temp2=weatherInfo.getString("temp2");
             String weatherDesp=weatherInfo.getString("weather1");
             String publishTime=weatherInfo.getString("week");
-            saveWeatherInfo(context,cityName,weatherCode,temp1,temp2,weatherDesp,publishTime);
+            String cltext=weatherInfo.getString("index_cl");
+            String lytext=weatherInfo.getString("index_tr");
+            String ssdtext=weatherInfo.getString("index_co");
+            saveWeatherInfo(context,cityName,weatherCode,temp1,temp2,weatherDesp,publishTime,cltext,lytext,ssdtext);
         }catch (JSONException e){
             e.printStackTrace();
         }
     }
-    public static void saveWeatherInfo(Context context,String cityName,String weatherCode,String temp1,String temp2,String weatherDesp,String publishTime){
+    public static void saveWeatherInfo(Context context,String cityName,String weatherCode,String temp1,String temp2,String weatherDesp,String publishTime,String cltext,String lytext,String ssdtext){
         SimpleDateFormat adf=new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
         SharedPreferences.Editor editor= PreferenceManager.getDefaultSharedPreferences(context).edit();
         editor.putBoolean("city_selected",true);
@@ -97,6 +100,9 @@ public class Utility {
         editor.putString("weather_desp",weatherDesp);
         editor.putString("publish_time",publishTime);
         editor.putString("current_date",adf.format(new Date()));
+        editor.putString("cl_text",cltext);
+        editor.putString("ly_text",lytext);
+        editor.putString("ssd_text",ssdtext);
         editor.commit();
     }
 }

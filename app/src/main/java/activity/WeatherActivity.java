@@ -29,6 +29,9 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
     private TextView temp1Text;
     private TextView temp2Text;
     private TextView currentDateText;
+    private TextView clText;
+    private TextView lyText;
+    private TextView ssdText;
     private Button switchCity;
     private Button refreshWeather;
     @Override
@@ -43,6 +46,9 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         temp1Text=(TextView)findViewById(R.id.temp1);
         temp2Text=(TextView)findViewById(R.id.temp2);
         currentDateText=(TextView)findViewById(R.id.current_date);
+        lyText=(TextView)findViewById(R.id.ly_text);
+        clText=(TextView)findViewById(R.id.cl_text);
+        ssdText=(TextView)findViewById(R.id.ssd_text);
         String countyCode=getIntent().getStringExtra("county_code");
         if(!TextUtils.isEmpty(countyCode)){
             publishText.setText("同步中...");
@@ -129,6 +135,9 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         weatherDespText.setText(prefs.getString("weather_desp",""));
         publishText.setText(prefs.getString("publish_time",""));
         currentDateText.setText(prefs.getString("current_date",""));
+        lyText.setText(prefs.getString("ly_text",""));
+        clText.setText(prefs.getString("cl_text",""));
+        ssdText.setText(prefs.getString("ssd_text",""));
         weatherInfoLayout.setVisibility(View.VISIBLE);
         cityNameText.setVisibility(View.VISIBLE);
         Intent intent=new Intent(this, AutoUpdateService.class);
