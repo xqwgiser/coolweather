@@ -79,8 +79,8 @@ public class Utility {
             String weatherCode=weatherInfo.getString("cityid");
             String temp1=weatherInfo.getString("temp1");
             String temp2=weatherInfo.getString("temp2");
-            String weatherDesp=weatherInfo.getString("weather");
-            String publishTime=weatherInfo.getString("ptime");
+            String weatherDesp=weatherInfo.getString("weather1");
+            String publishTime=weatherInfo.getString("week");
             saveWeatherInfo(context,cityName,weatherCode,temp1,temp2,weatherDesp,publishTime);
         }catch (JSONException e){
             e.printStackTrace();
