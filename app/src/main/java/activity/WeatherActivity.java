@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.example.xqw.coolweather.R;
 
+import service.AutoUpdateService;
 import util.HttpUtil;
 import util.Utility;
 
@@ -124,11 +125,13 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         cityNameText.setText(prefs.getString("city_name",""));
         temp1Text.setText(prefs.getString("temp1",""));
-        temp2Text.setText(prefs.getString("temp2","2"));
+        temp2Text.setText(prefs.getString("temp2",""));
         weatherDespText.setText(prefs.getString("weather_desp",""));
         publishText.setText(prefs.getString("publish_time",""));
         currentDateText.setText(prefs.getString("current_date",""));
         weatherInfoLayout.setVisibility(View.VISIBLE);
         cityNameText.setVisibility(View.VISIBLE);
+        Intent intent=new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 }
