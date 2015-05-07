@@ -52,12 +52,19 @@
             android:layout_marginTop="10dp"
             android:textColor="#FFF"
             android:textSize="18sp"/>
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/weather_info_layout"
             android:layout_centerInParent="true"
+            android:id="@+id/weather_info_layout"
             android:orientation="vertical">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:id="@+id/weather_image"
+                android:src="@drawable/org3_ww0"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="60dp"
@@ -68,7 +75,7 @@
                 android:textSize="40sp"/>
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:orientation="vertical">
                 <TextView
