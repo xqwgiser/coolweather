@@ -44,7 +44,6 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
     private TextView publishText;
     private TextView weatherDespText;
     private TextView temp1Text;
-    private TextView temp2Text;
     private TextView currentDateText;
     private TextView clText;
     private TextView lyText;
@@ -63,7 +62,6 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         publishText=(TextView)findViewById(R.id.publish_text);
         weatherDespText=(TextView)findViewById(R.id.weather_desp);
         temp1Text=(TextView)findViewById(R.id.temp1);
-        temp2Text=(TextView)findViewById(R.id.temp2);
         currentDateText=(TextView)findViewById(R.id.current_date);
         lyText=(TextView)findViewById(R.id.ly_text);
         clText=(TextView)findViewById(R.id.cl_text);
@@ -153,7 +151,6 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         cityNameText.setText(prefs.getString("city_name",""));
         temp1Text.setText(prefs.getString("temp1",""));
-        temp2Text.setText(prefs.getString("temp2",""));
         weatherDespText.setText(prefs.getString("weather_desp",""));
         String weatherinfo=prefs.getString("weather_desp","");
          if (weatherinfo.contains("小雨"))
