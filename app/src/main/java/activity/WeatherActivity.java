@@ -11,6 +11,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.xqw.coolweather.R;
@@ -51,6 +52,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
     private Button switchCity;
     private Button refreshWeather;
     private ImageView imageView;
+    private ImageView bg;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -67,9 +69,11 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         clText=(TextView)findViewById(R.id.cl_text);
         ssdText=(TextView)findViewById(R.id.ssd_text);
         imageView=(ImageView)findViewById(R.id.weather_image);
+        bg=(ImageView)findViewById(R.id.bg);
         String countyCode=getIntent().getStringExtra("county_code");
         if(!TextUtils.isEmpty(countyCode)){
             publishText.setText("同步中...");
+            bg.setVisibility(View.INVISIBLE);
             weatherInfoLayout.setVisibility(View.INVISIBLE);
             cityNameText.setVisibility(View.INVISIBLE);
             queryWeatherCode(countyCode);
@@ -152,13 +156,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         temp2Text.setText(prefs.getString("temp2",""));
         weatherDespText.setText(prefs.getString("weather_desp",""));
         String weatherinfo=prefs.getString("weather_desp","");
-        if(weatherinfo.contains("晴"))
-            weatherstate=Qing;
-        else if (weatherinfo.contains("阴"))
-            weatherstate=Yin;
-        else if (weatherinfo.contains("多云"))
-            weatherstate=Duoyun;
-        else if (weatherinfo.contains("小雨"))
+         if (weatherinfo.contains("小雨"))
             weatherstate=Xiaoyu;
         else if (weatherinfo.contains("中雨"))
             weatherstate=Zhongyu;
@@ -180,6 +178,12 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
             weatherstate=Daxue;
         else if (weatherinfo.contains("暴雪"))
             weatherstate=Baoxue;
+        else if(weatherinfo.contains("晴"))
+            weatherstate=Qing;
+        else if (weatherinfo.contains("阴"))
+            weatherstate=Yin;
+        else if (weatherinfo.contains("多云"))
+            weatherstate=Duoyun;
         publishText.setText(prefs.getString("publish_time",""));
         currentDateText.setText(prefs.getString("current_date",""));
         lyText.setText("旅游："+prefs.getString("ly_text","")+"  ");
@@ -188,47 +192,62 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         switch (weatherstate){
             case Qing:
                 imageView.setImageResource(R.drawable.org3_ww0);
+                bg.setImageResource(R.drawable.qing);
                 break;
             case Yin:
                 imageView.setImageResource(R.drawable.org3_ww2);
+                bg.setImageResource(R.drawable.yin);
                 break;
             case Duoyun:
                 imageView.setImageResource(R.drawable.org3_ww1);
+                bg.setImageResource(R.drawable.yin);
                 break;
             case Xiaoyu:
                 imageView.setImageResource(R.drawable.org3_ww7);
+                bg.setImageResource(R.drawable.yu);
                 break;
             case Zhongyu:
                 imageView.setImageResource(R.drawable.org3_ww8);
+                bg.setImageResource(R.drawable.yu);
                 break;
             case Dayu:
                 imageView.setImageResource(R.drawable.org3_ww19);
+                bg.setImageResource(R.drawable.yu);
                 break;
             case Baoyu:
                 imageView.setImageResource(R.drawable.org3_ww10);
+                bg.setImageResource(R.drawable.yu);
                 break;
             case Zhenyu:
                 imageView.setImageResource(R.drawable.org3_ww3);
+                bg.setImageResource(R.drawable.yu);
                 break;
             case Leizhenyu:
                 imageView.setImageResource(R.drawable.org3_ww4);
+                bg.setImageResource(R.drawable.yu);
                 break;
             case Yujiaxue:
                 imageView.setImageResource(R.drawable.org3_ww6);
+                bg.setImageResource(R.drawable.xue);
                 break;
             case Xiaoxue:
                 imageView.setImageResource(R.drawable.org3_ww14);
+                bg.setImageResource(R.drawable.xue);
                 break;
             case Zhongxue:
                 imageView.setImageResource(R.drawable.org3_ww15);
+                bg.setImageResource(R.drawable.xue);
                 break;
             case Daxue:
                 imageView.setImageResource(R.drawable.org3_ww16);
+                bg.setImageResource(R.drawable.xue);
                 break;
             case Baoxue:
                 imageView.setImageResource(R.drawable.org3_ww17);
+                bg.setImageResource(R.drawable.xue);
                 break;
         }
+        bg.setVisibility(View.VISIBLE);
         weatherInfoLayout.setVisibility(View.VISIBLE);
         cityNameText.setVisibility(View.VISIBLE);
         Intent intent=new Intent(this, AutoUpdateService.class);
