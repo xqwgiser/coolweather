@@ -2,8 +2,11 @@ package activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -14,17 +17,22 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.xqw.coolweather.R;
+import net.youmi.android.AdManager;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.baidu.location.BDLocation;
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import model.City;
 import model.CoolWeatherDB;
 import model.County;
 import model.Province;
 import util.HttpUtil;
+import util.MyLocationListener;
 import util.Utility;
 
 /**
@@ -47,9 +55,43 @@ public class ChooseAreaActivity extends Activity {
     private City selectedCity;
     private int currentLevel;
     private boolean isFromWeatherActivity;
+    public LocationClient mLocationClient = null;
+    public BDLocationListener myListener = new MyLocationListener();
+    public MyLocationListener myLocationListener;
+    public InputStream inputStream;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        AdManager.getInstance(this).init("89abe2f74ace9443", "b5f7d3f807813d68", false);
+//        mLocationClient = new LocationClient(getApplicationContext());
+//        LocationClientOption option = new LocationClientOption();
+//        option.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
+//        option.setCoorType("bd09ll");//返回的定位结果是百度经纬度,默认值gcj02
+//        option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
+//        option.setIsNeedAddress(true);//返回的定位结果包含地址信息
+//        option.setOpenGps(false);
+//        option.setProdName("coolweather location");
+//        mLocationClient.setLocOption(option);
+//        mLocationClient.registerLocationListener(myListener);
+//        mLocationClient.start();
+//        if (mLocationClient != null && mLocationClient.isStarted())
+//            if(isNetworkConnected(this))
+//            {
+//                mLocationClient.requestLocation();
+//            }else {
+//                mLocationClient.requestOfflineLocation();
+//            }
+//        myLocationListener=new MyLocationListener();
+//        inputStream=getResources().openRawResource(R.raw.code);
+//        if(!myLocationListener.getlocationId(inputStream).isEmpty()){
+//            String countyCode=myLocationListener.getlocationId(inputStream);
+//            Intent intent=new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+//            intent.putExtra("county_code",countyCode);
+//            startActivity(intent);
+//            finish();
+//            return;
+//        }
+
         isFromWeatherActivity=getIntent().getBooleanExtra("from_weather_activity",false);
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         if(prefs.getBoolean("city_selected",false)&&!isFromWeatherActivity){
@@ -206,4 +248,20 @@ public class ChooseAreaActivity extends Activity {
             finish();
         }
     }
+    public boolean isNetworkConnected(Context context) {
+        if (context != null) {
+            ConnectivityManager mConnectivityManager = (ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+            if (mNetworkInfo != null) {
+                return mNetworkInfo.isAvailable();
+            }
+        }
+        return false;
+    }
+//    @Override
+//    public void onDestroy(){
+//        mLocationClient.stop();
+//        super.onDestroy();
+//    }
 }

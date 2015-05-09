@@ -1,8 +1,11 @@
 package activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -14,10 +17,19 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.baidu.location.BDLocationListener;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.example.xqw.coolweather.R;
+
+import net.youmi.android.banner.AdSize;
+import net.youmi.android.banner.AdView;
+
+import java.io.InputStream;
 
 import service.AutoUpdateService;
 import util.HttpUtil;
+import util.MyLocationListener;
 import util.Utility;
 
 /**
@@ -69,19 +81,22 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         imageView=(ImageView)findViewById(R.id.weather_image);
         bg=(ImageView)findViewById(R.id.bg);
         String countyCode=getIntent().getStringExtra("county_code");
-        if(!TextUtils.isEmpty(countyCode)){
-            publishText.setText("同步中...");
-            bg.setVisibility(View.INVISIBLE);
-            weatherInfoLayout.setVisibility(View.INVISIBLE);
-            cityNameText.setVisibility(View.INVISIBLE);
-            queryWeatherCode(countyCode);
-        }else {
-            showWeather();
-        }
+            if (!TextUtils.isEmpty(countyCode)) {
+                publishText.setText("同步中...");
+                bg.setVisibility(View.INVISIBLE);
+                weatherInfoLayout.setVisibility(View.INVISIBLE);
+                cityNameText.setVisibility(View.INVISIBLE);
+                queryWeatherCode(countyCode);
+            } else {
+                showWeather();
+            }
         switchCity=(Button)findViewById(R.id.switch_city);
         refreshWeather=(Button)findViewById(R.id.refresh_weather);
         switchCity.setOnClickListener(this);
         refreshWeather.setOnClickListener(this);
+        AdView adView=new AdView(this, AdSize.FIT_SCREEN);
+        LinearLayout adlayout=(LinearLayout)findViewById(R.id.adLayout);
+        adlayout.addView(adView);
     }
     @Override
     public void onClick(View v){
@@ -151,7 +166,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         cityNameText.setText(prefs.getString("city_name",""));
         temp1Text.setText(prefs.getString("temp1",""));
-        weatherDespText.setText(prefs.getString("weather_desp",""));
+        weatherDespText.setText(prefs.getString("weather_desp", ""));
         String weatherinfo=prefs.getString("weather_desp","");
          if (weatherinfo.contains("小雨"))
             weatherstate=Xiaoyu;
@@ -250,4 +265,5 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         Intent intent=new Intent(this, AutoUpdateService.class);
         startService(intent);
     }
+
 }

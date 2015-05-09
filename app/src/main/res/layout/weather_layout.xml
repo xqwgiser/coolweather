@@ -116,6 +116,13 @@
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/adLayout"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true">
+            </LinearLayout>
         </RelativeLayout>
 
 </LinearLayout>
