@@ -43,7 +43,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="activity.WeatherActivity"></activity>
+        <activity android:name="activity.WeatherActivity"
+            android:launchMode="singleTask">
+
+        </activity>
         <service android:name="service.AutoUpdateService"></service>
         <receiver android:name="receiver.AutoUpdateReceiver"></receiver>
         <activity

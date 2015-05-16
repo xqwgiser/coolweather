@@ -10,6 +10,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -20,7 +21,10 @@ import android.widget.Toast;
 import com.example.xqw.coolweather.R;
 import net.youmi.android.AdManager;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import com.baidu.location.BDLocation;
@@ -32,7 +36,6 @@ import model.CoolWeatherDB;
 import model.County;
 import model.Province;
 import util.HttpUtil;
-import util.MyLocationListener;
 import util.Utility;
 
 /**
@@ -56,42 +59,32 @@ public class ChooseAreaActivity extends Activity {
     private int currentLevel;
     private boolean isFromWeatherActivity;
     public LocationClient mLocationClient = null;
-    public BDLocationListener myListener = new MyLocationListener();
-    public MyLocationListener myLocationListener;
     public InputStream inputStream;
+    public MyLocationListener myLocationListener;
+    public String countycode1;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         AdManager.getInstance(this).init("89abe2f74ace9443", "b5f7d3f807813d68", false);
-//        mLocationClient = new LocationClient(getApplicationContext());
-//        LocationClientOption option = new LocationClientOption();
-//        option.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
-//        option.setCoorType("bd09ll");//返回的定位结果是百度经纬度,默认值gcj02
-//        option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
-//        option.setIsNeedAddress(true);//返回的定位结果包含地址信息
-//        option.setOpenGps(false);
-//        option.setProdName("coolweather location");
-//        mLocationClient.setLocOption(option);
-//        mLocationClient.registerLocationListener(myListener);
-//        mLocationClient.start();
-//        if (mLocationClient != null && mLocationClient.isStarted())
-//            if(isNetworkConnected(this))
-//            {
-//                mLocationClient.requestLocation();
-//            }else {
-//                mLocationClient.requestOfflineLocation();
-//            }
-//        myLocationListener=new MyLocationListener();
-//        inputStream=getResources().openRawResource(R.raw.code);
-//        if(!myLocationListener.getlocationId(inputStream).isEmpty()){
-//            String countyCode=myLocationListener.getlocationId(inputStream);
-//            Intent intent=new Intent(ChooseAreaActivity.this,WeatherActivity.class);
-//            intent.putExtra("county_code",countyCode);
-//            startActivity(intent);
-//            finish();
-//            return;
-//        }
-
+        mLocationClient = new LocationClient(getApplicationContext());
+        myLocationListener=new MyLocationListener();
+        mLocationClient.registerLocationListener(myLocationListener);
+        LocationClientOption option = new LocationClientOption();
+        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
+        option.setCoorType("bd09ll");//返回的定位结果是百度经纬度,默认值gcj02
+        option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
+        option.setIsNeedAddress(true);//返回的定位结果包含地址信息
+        option.setOpenGps(false);
+        option.setProdName("coolweather location");
+        mLocationClient.setLocOption(option);
+        mLocationClient.start();
+        if (mLocationClient != null && mLocationClient.isStarted()) {
+            if (isNetworkConnected(this)) {
+                mLocationClient.requestLocation();
+            } else {
+                mLocationClient.requestOfflineLocation();
+            }
+        }
         isFromWeatherActivity=getIntent().getBooleanExtra("from_weather_activity",false);
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         if(prefs.getBoolean("city_selected",false)&&!isFromWeatherActivity){
@@ -259,9 +252,69 @@ public class ChooseAreaActivity extends Activity {
         }
         return false;
     }
-//    @Override
-//    public void onDestroy(){
-//        mLocationClient.stop();
-//        super.onDestroy();
-//    }
+    @Override
+    public void onDestroy(){
+        mLocationClient.stop();
+        super.onDestroy();
+    }
+public class MyLocationListener implements BDLocationListener {
+    private String sb;
+    @Override
+    public void onReceiveLocation(BDLocation location) {
+        if (location == null) {
+            sb = null;
+            return;
+        }
+        if (location.getLocType() == BDLocation.TypeNetWorkLocation) {
+            sb = location.getDistrict();
+            sb=sb.substring(0,2);
+        } else if (location.getLocType() == BDLocation.TypeNetWorkLocation){
+            sb=location.getDistrict();
+            sb=sb.substring(0,2);
+        }
+        inputStream=getResources().openRawResource(R.raw.code);
+        String all=getlocationId(inputStream);
+        String[]allcities=all.split("\n");
+            if(allcities!=null&&allcities.length>0){
+                for(int i=0;i<allcities.length;i++){
+                    if(allcities[i].contains(sb)){
+                        String[] code=allcities[i].split("=");
+                        countycode1=code[0];
+                        countycode1.trim();
+                    }
+                }
+                if(!isFromWeatherActivity) {
+                    Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
+                    intent.putExtra("county_code", countycode1);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+    }
+
+    public String getlocationId(InputStream inputStream){
+        InputStreamReader inputStreamReader=null;
+        try {
+            inputStreamReader=new InputStreamReader(inputStream,"UTF-8");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        BufferedReader reader=new BufferedReader(inputStreamReader);
+        StringBuffer stringBuffer=new StringBuffer("");
+        String line;
+        try {
+            while ((line=reader.readLine())!=null){
+                stringBuffer.append(line);
+                stringBuffer.append("\n");
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        String response=stringBuffer.toString();
+        return response;
+    }
+    public String getSb(){
+        return countycode1;
+    }
+}
 }

@@ -29,7 +29,6 @@ import java.io.InputStream;
 
 import service.AutoUpdateService;
 import util.HttpUtil;
-import util.MyLocationListener;
 import util.Utility;
 
 /**
@@ -86,7 +85,11 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 bg.setVisibility(View.INVISIBLE);
                 weatherInfoLayout.setVisibility(View.INVISIBLE);
                 cityNameText.setVisibility(View.INVISIBLE);
-                queryWeatherCode(countyCode);
+                if(countyCode.length()<8) {
+                    queryWeatherCode(countyCode);
+                }else {
+                    queryWeatherInfo(countyCode);
+                }
             } else {
                 showWeather();
             }
