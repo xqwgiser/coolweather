@@ -66,25 +66,28 @@ public class ChooseAreaActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         AdManager.getInstance(this).init("89abe2f74ace9443", "b5f7d3f807813d68", false);
-        mLocationClient = new LocationClient(getApplicationContext());
-        myLocationListener=new MyLocationListener();
-        mLocationClient.registerLocationListener(myLocationListener);
-        LocationClientOption option = new LocationClientOption();
-        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
-        option.setCoorType("bd09ll");//返回的定位结果是百度经纬度,默认值gcj02
-        option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
-        option.setIsNeedAddress(true);//返回的定位结果包含地址信息
-        option.setOpenGps(false);
-        option.setProdName("coolweather location");
-        mLocationClient.setLocOption(option);
-        mLocationClient.start();
-        if (mLocationClient != null && mLocationClient.isStarted()) {
-            if (isNetworkConnected(this)) {
-                mLocationClient.requestLocation();
-            } else {
-                mLocationClient.requestOfflineLocation();
+        if(isNetworkConnected(this)) {
+            mLocationClient = new LocationClient(getApplicationContext());
+            myLocationListener = new MyLocationListener();
+            mLocationClient.registerLocationListener(myLocationListener);
+            LocationClientOption option = new LocationClientOption();
+            option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
+            option.setCoorType("bd09ll");//返回的定位结果是百度经纬度,默认值gcj02
+            option.setScanSpan(5000);//设置发起定位请求的间隔时间为5000ms
+            option.setIsNeedAddress(true);//返回的定位结果包含地址信息
+            option.setOpenGps(false);
+            option.setProdName("coolweather location");
+            mLocationClient.setLocOption(option);
+            mLocationClient.start();
+            if (mLocationClient != null && mLocationClient.isStarted()) {
+                if (isNetworkConnected(this)) {
+                    mLocationClient.requestLocation();
+                } else {
+                    mLocationClient.requestOfflineLocation();
+                }
             }
         }
+
         isFromWeatherActivity=getIntent().getBooleanExtra("from_weather_activity",false);
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         if(prefs.getBoolean("city_selected",false)&&!isFromWeatherActivity){
@@ -207,7 +210,7 @@ public class ChooseAreaActivity extends Activity {
                     @Override
                     public void run() {
                         closeProgressDialog();
-                        Toast.makeText(ChooseAreaActivity.this,"加载失败",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ChooseAreaActivity.this,"加载失败,请连接网络重试。",Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -254,7 +257,9 @@ public class ChooseAreaActivity extends Activity {
     }
     @Override
     public void onDestroy(){
-        mLocationClient.stop();
+        if (mLocationClient != null && mLocationClient.isStarted()) {
+            mLocationClient.stop();
+        }
         super.onDestroy();
     }
 public class MyLocationListener implements BDLocationListener {
