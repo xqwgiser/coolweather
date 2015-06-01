@@ -7,18 +7,29 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -29,7 +40,13 @@ import net.youmi.android.banner.AdSize;
 import net.youmi.android.banner.AdView;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import in.srain.cube.views.ptr.PtrFrameLayout;
+import model.MenuAdapter;
+import model.Menuitem;
+import model.Weatherinfo;
 import service.AutoUpdateService;
 import util.HttpUtil;
 import util.Utility;
@@ -37,7 +54,7 @@ import util.Utility;
 /**
  * Created by xqw on 2015/5/5.
  */
-public class WeatherActivity extends Activity implements View.OnClickListener {
+public class WeatherActivity extends ActionBarActivity implements View.OnClickListener {
     public static final int Qing=0;
     public static final int Yin=1;
     public static final int Duoyun=2;
@@ -54,17 +71,17 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
     public static final int Baoxue=13;
     private int weatherstate;
     private LinearLayout weatherInfoLayout;
-    private TextView cityNameText;
     private TextView publishText;
     private TextView weatherDespText;
     private TextView temp1Text;
     private TextView currentDateText;
-    private TextView clText;
-    private TextView lyText;
-    private TextView ssdText;
-    private Button switchCity;
-    private Button refreshWeather;
-    private ImageView imageView;
+    private TextView cityNameText;
+//    private TextView clText;
+//    private TextView lyText;
+//    private TextView ssdText;
+   // private Button switchCity;
+    //private Button refreshWeather;
+   // private ImageView imageView;
     private ImageView bg;
     private ImageView cloud;
     private ImageView cloud1;
@@ -83,21 +100,65 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
     private ImageView drop8;
     private ImageView drop9;
     private ImageView drop10;
+    private TextView todaytemp;
+    private TextView todayweath;
+    private ImageView todayimag;
+    private TextView tomarrowtemp;
+    private TextView tomarrowweath;
+    private ImageView tomarrowimag;
+    private RelativeLayout today;
+    private RelativeLayout tomarrow;
+    private Toolbar mToolbar;
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private List<Menuitem>menuItems=new ArrayList<Menuitem>();
+    private ListView menulist;
+    private Weatherinfo weatherInfo;
+    private Weatherinfo tomarrowinfo;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.weather_layout);
+        menulist=(ListView)findViewById(R.id.menu_item);
+        initViews();
+        menulist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Menuitem menuitem=menuItems.get(position);
+                String menuname=menuitem.getContext();
+                switch (menuname){
+                    case"切换":
+                        Intent intent=new Intent(WeatherActivity.this,ChooseAreaActivity.class);
+                        intent.putExtra("from_weather_activity",true);
+                        startActivity(intent);
+                        finish();
+                        break;
+                    case "设置":
+                        break;
+                    case "关于":
+                        break;
+                    case "退出":
+                        finish();
+                        break;
+                }
+            }
+        });
         weatherInfoLayout=(LinearLayout)findViewById(R.id.weather_info_layout);
-        cityNameText=(TextView)findViewById(R.id.city_name);
+        cityNameText=(TextView)findViewById(R.id.cityname);
         publishText=(TextView)findViewById(R.id.publish_text);
         weatherDespText=(TextView)findViewById(R.id.weather_desp);
+        todayweath=(TextView)findViewById(R.id.todayweath);
         temp1Text=(TextView)findViewById(R.id.temp1);
+        todaytemp=(TextView)findViewById(R.id.todaytemp);
+        tomarrowtemp=(TextView)findViewById(R.id.tomarrowtemp);
+        tomarrowweath=(TextView)findViewById(R.id.tomarrowweath);
         currentDateText=(TextView)findViewById(R.id.current_date);
-        lyText=(TextView)findViewById(R.id.ly_text);
-        clText=(TextView)findViewById(R.id.cl_text);
-        ssdText=(TextView)findViewById(R.id.ssd_text);
-        imageView=(ImageView)findViewById(R.id.weather_image);
+//        lyText=(TextView)findViewById(R.id.ly_text);
+//        clText=(TextView)findViewById(R.id.cl_text);
+//        ssdText=(TextView)findViewById(R.id.ssd_text);
+        //imageView=(ImageView)findViewById(R.id.weather_image);
+        todayimag=(ImageView)findViewById(R.id.todayimag);
+        tomarrowimag=(ImageView)findViewById(R.id.tomarrowimg);
         bg=(ImageView)findViewById(R.id.bg);
         String countyCode=getIntent().getStringExtra("county_code");
             if (!TextUtils.isEmpty(countyCode)) {
@@ -113,31 +174,100 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
             } else {
                 showWeather();
             }
-        switchCity=(Button)findViewById(R.id.switch_city);
-        refreshWeather=(Button)findViewById(R.id.refresh_weather);
-        switchCity.setOnClickListener(this);
-        refreshWeather.setOnClickListener(this);
+       // switchCity=(Button)findViewById(R.id.switch_city);
+        //refreshWeather=(Button)findViewById(R.id.refresh_weather);
+       // switchCity.setOnClickListener(this);
+        //refreshWeather.setOnClickListener(this);
+        today=(RelativeLayout)findViewById(R.id.today);
+        tomarrow=(RelativeLayout)findViewById(R.id.tomarrow);
+        today.setOnClickListener(this);
+        tomarrow.setOnClickListener(this);
         AdView adView=new AdView(this, AdSize.FIT_SCREEN);
         LinearLayout adlayout=(LinearLayout)findViewById(R.id.adLayout);
         adlayout.addView(adView);
     }
+    private void initMenu(){
+        Menuitem swith=new Menuitem("切换",R.drawable.ic_swap_horiz_black_36dp);
+        Menuitem set=new Menuitem("设置",R.drawable.ic_settings_black_36dp);
+        Menuitem info=new Menuitem("关于",R.drawable.ic_info_outline_black_36dp);
+        Menuitem quilt=new Menuitem("退出",R.drawable.ic_exit_to_app_black_36dp);
+        menuItems.add(swith);
+        menuItems.add(set);
+        menuItems.add(info);
+        menuItems.add(quilt);
+    }
+    private void initViews() {
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        // toolbar.setLogo(R.drawable.ic_launcher);
+        mToolbar.setTitle("首页");// 标题的文字需在setSupportActionBar之前，不然会无效
+        // toolbar.setSubtitle("副标题");
+        setSupportActionBar(mToolbar);
+		/* 这些通过ActionBar来设置也是一样的，注意要在setSupportActionBar(toolbar);之后，不然就报错了 */
+        // getSupportActionBar().setTitle("标题");
+        // getSupportActionBar().setSubtitle("副标题");
+        // getSupportActionBar().setLogo(R.drawable.ic_launcher);
+
+		/* 菜单的监听可以在toolbar里设置，也可以像ActionBar那样，通过下面的两个回调方法来处理 */
+        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_settings:
+                        //Toast.makeText(Detail.this, "action_settings", Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.action_share:
+                        //Toast.makeText(Detail.this, "action_share", Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+            }
+        });
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        initMenu();
+        MenuAdapter adapter=new MenuAdapter(WeatherActivity.this,R.layout.menu,menuItems);
+        menulist.setAdapter(adapter);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open,
+                R.string.drawer_close);
+        mDrawerToggle.syncState();
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
     @Override
     public void onClick(View v){
         switch (v.getId()){
-            case R.id.switch_city:
-                Intent intent=new Intent(this,ChooseAreaActivity.class);
-                intent.putExtra("from_weather_activity",true);
-                startActivity(intent);
+//            case R.id.switch_city:
+//                Intent intent=new Intent(this,ChooseAreaActivity.class);
+//                intent.putExtra("from_weather_activity",true);
+//                startActivity(intent);
+//                finish();
+//                break;
+//            case R.id.refresh_weather:
+//                publishText.setText("正在同步...");
+//                SharedPreferences preferences=PreferenceManager.getDefaultSharedPreferences(this);
+//                String weatherCode=preferences.getString("weather_code","");
+//                if(!TextUtils.isEmpty(weatherCode));{
+//                queryWeatherInfo(weatherCode);
+//            }
+//            break;
+            case R.id.today:
+                Intent intent1=new Intent(this,Detail.class);
+                intent1.putExtra("weather_data",weatherInfo);
+                startActivity(intent1);
                 finish();
                 break;
-            case R.id.refresh_weather:
-                publishText.setText("正在同步...");
-                SharedPreferences preferences=PreferenceManager.getDefaultSharedPreferences(this);
-                String weatherCode=preferences.getString("weather_code","");
-                if(!TextUtils.isEmpty(weatherCode));{
-                queryWeatherInfo(weatherCode);
-            }
-            break;
+            case R.id.tomarrow:
+                Intent intent2=new Intent(this,Detail.class);
+                intent2.putExtra("tomarrow_data",tomarrowinfo);
+                startActivity(intent2);
+                finish();
+                break;
             default:
                 break;
         }
@@ -186,11 +316,32 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
         });
     }
     private void showWeather(){
+
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
         cityNameText.setText(prefs.getString("city_name",""));
         temp1Text.setText(prefs.getString("temp1",""));
+        todaytemp.setText(prefs.getString("temp1",""));
+        tomarrowtemp.setText(prefs.getString("temp2",""));
         weatherDespText.setText(prefs.getString("weather_desp", ""));
+        tomarrowweath.setText(prefs.getString("weather2",""));
+        todayweath.setText(prefs.getString("weather_desp",""));
         String weatherinfo=prefs.getString("weather_desp","");
+        weatherInfo=new Weatherinfo();
+        weatherInfo.setCityname(prefs.getString("city_name",""));
+        weatherInfo.setTemp(prefs.getString("temp1",""));
+        weatherInfo.setWeather(prefs.getString("weather_desp", ""));
+        weatherInfo.setLy("旅游："+prefs.getString("ly_text","")+"  ");
+        weatherInfo.setCl("晨练："+prefs.getString("cl_text","")+"  ");
+        weatherInfo.setSsd("舒适度："+prefs.getString("ssd_text","")+"  ");
+        weatherInfo.setCy(prefs.getString("cloth",""));
+        tomarrowinfo=new Weatherinfo();
+        tomarrowinfo.setCityname(prefs.getString("city_name",""));
+        tomarrowinfo.setTemp(prefs.getString("temp2",""));
+        tomarrowinfo.setWeather(prefs.getString("weather2", ""));
+        tomarrowinfo.setLy("旅游："+"无信息"+"  ");
+        tomarrowinfo.setCl("晨练："+"无信息"+"  ");
+        tomarrowinfo.setSsd("舒适度："+"无信息"+"  ");
+        tomarrowinfo.setCy("无指导信息");
          if (weatherinfo.contains("小雨"))
             weatherstate=Xiaoyu;
         else if (weatherinfo.contains("中雨"))
@@ -220,14 +371,14 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
             weatherstate=Yin;
         else if (weatherinfo.contains("多云"))
             weatherstate=Duoyun;
-        publishText.setText(prefs.getString("publish_time",""));
+        publishText.setText("今日"+prefs.getString("publish_time","")+":00发布");
         currentDateText.setText(prefs.getString("current_date",""));
-        lyText.setText("旅游："+prefs.getString("ly_text","")+"  ");
-        clText.setText("晨练："+prefs.getString("cl_text","")+"  ");
-        ssdText.setText("舒适度："+prefs.getString("ssd_text","")+"  ");
+//        lyText.setText("旅游："+prefs.getString("ly_text","")+"  ");
+//        clText.setText("晨练："+prefs.getString("cl_text","")+"  ");
+//        ssdText.setText("舒适度："+prefs.getString("ssd_text","")+"  ");
         switch (weatherstate){
             case Qing:
-                imageView.setImageResource(R.drawable.org3_ww0);
+                todayimag.setImageResource(R.drawable.org3_ww0);
                 bg.setImageResource(R.drawable.qing);
                 cloud=(ImageView)findViewById(R.id.cloud);
                 cloud1=(ImageView)findViewById(R.id.cloud1);
@@ -242,7 +393,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 sunshine.startAnimation(animation1);
                 break;
             case Yin:
-                imageView.setImageResource(R.drawable.org3_ww2);
+                todayimag.setImageResource(R.drawable.org3_ww2);
                 bg.setImageResource(R.drawable.yin);
                 bird=(ImageView)findViewById(R.id.bird);
                 bird.setImageResource(R.drawable.list);
@@ -258,7 +409,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 bird1.startAnimation(birdfly1);
                 break;
             case Duoyun:
-                imageView.setImageResource(R.drawable.org3_ww1);
+                todayimag.setImageResource(R.drawable.org3_ww1);
                 bg.setImageResource(R.drawable.yin);
                 bird=(ImageView)findViewById(R.id.bird);
                 bird.setImageResource(R.drawable.list);
@@ -275,7 +426,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 bird1.startAnimation(birdfly2);
                 break;
             case Xiaoyu:
-                imageView.setImageResource(R.drawable.org3_ww7);
+                todayimag.setImageResource(R.drawable.org3_ww7);
                 bg.setImageResource(R.drawable.yu);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -302,7 +453,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim);
                 break;
             case Zhongyu:
-                imageView.setImageResource(R.drawable.org3_ww8);
+                todayimag.setImageResource(R.drawable.org3_ww8);
                 bg.setImageResource(R.drawable.yu);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -329,7 +480,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim1);
                 break;
             case Dayu:
-                imageView.setImageResource(R.drawable.org3_ww19);
+                todayimag.setImageResource(R.drawable.org3_ww19);
                 bg.setImageResource(R.drawable.yu);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -356,7 +507,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim2);
                 break;
             case Baoyu:
-                imageView.setImageResource(R.drawable.org3_ww10);
+                todayimag.setImageResource(R.drawable.org3_ww10);
                 bg.setImageResource(R.drawable.yu);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -383,7 +534,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim3);
                 break;
             case Zhenyu:
-                imageView.setImageResource(R.drawable.org3_ww3);
+                todayimag.setImageResource(R.drawable.org3_ww3);
                 bg.setImageResource(R.drawable.yu);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -396,21 +547,21 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop8=(ImageView)findViewById(R.id.drop8);
                 drop9=(ImageView)findViewById(R.id.drop9);
                 drop10=(ImageView)findViewById(R.id.drop10);
-                drop1.setImageResource(R.drawable.snowflake_xl);
-                drop2.setImageResource(R.drawable.snowflake_m);
-                drop3.setImageResource(R.drawable.snowflake_l);
-                drop4.setImageResource(R.drawable.snowflake_xxl);
-                drop5.setImageResource(R.drawable.snowflake_l);
-                drop6.setImageResource(R.drawable.snowflake_m);
-                drop7.setImageResource(R.drawable.snowflake_xl);
-                drop8.setImageResource(R.drawable.snowflake_xxl);
-                drop9.setImageResource(R.drawable.snowflake_l);
-                drop10.setImageResource(R.drawable.snowflake_xxl);
+                drop1.setImageResource(R.drawable.raindrop_xl);
+                drop2.setImageResource(R.drawable.raindrop_m);
+                drop3.setImageResource(R.drawable.raindrop_s);
+                drop4.setImageResource(R.drawable.raindrop_l);
+                drop5.setImageResource(R.drawable.raindrop_xl);
+                drop6.setImageResource(R.drawable.raindrop_m);
+                drop7.setImageResource(R.drawable.raindrop_s);
+                drop8.setImageResource(R.drawable.raindrop_l);
+                drop9.setImageResource(R.drawable.raindrop_xl);
+                drop10.setImageResource(R.drawable.raindrop_xl);
                 Animation dropanim4=AnimationUtils.loadAnimation(this,R.anim.drop);
                 drop.startAnimation(dropanim4);
                 break;
             case Leizhenyu:
-                imageView.setImageResource(R.drawable.org3_ww4);
+                todayimag.setImageResource(R.drawable.org3_ww4);
                 bg.setImageResource(R.drawable.yu);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -423,21 +574,21 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop8=(ImageView)findViewById(R.id.drop8);
                 drop9=(ImageView)findViewById(R.id.drop9);
                 drop10=(ImageView)findViewById(R.id.drop10);
-                drop1.setImageResource(R.drawable.snowflake_xl);
-                drop2.setImageResource(R.drawable.snowflake_m);
-                drop3.setImageResource(R.drawable.snowflake_l);
-                drop4.setImageResource(R.drawable.snowflake_xxl);
-                drop5.setImageResource(R.drawable.snowflake_l);
-                drop6.setImageResource(R.drawable.snowflake_m);
-                drop7.setImageResource(R.drawable.snowflake_xl);
-                drop8.setImageResource(R.drawable.snowflake_xxl);
-                drop9.setImageResource(R.drawable.snowflake_l);
-                drop10.setImageResource(R.drawable.snowflake_xxl);
+                drop1.setImageResource(R.drawable.raindrop_xl);
+                drop2.setImageResource(R.drawable.raindrop_m);
+                drop3.setImageResource(R.drawable.raindrop_s);
+                drop4.setImageResource(R.drawable.raindrop_l);
+                drop5.setImageResource(R.drawable.raindrop_xl);
+                drop6.setImageResource(R.drawable.raindrop_m);
+                drop7.setImageResource(R.drawable.raindrop_s);
+                drop8.setImageResource(R.drawable.raindrop_l);
+                drop9.setImageResource(R.drawable.raindrop_xl);
+                drop10.setImageResource(R.drawable.raindrop_xl);
                 Animation dropanim5=AnimationUtils.loadAnimation(this,R.anim.drop);
                 drop.startAnimation(dropanim5);
                 break;
             case Yujiaxue:
-                imageView.setImageResource(R.drawable.org3_ww6);
+                todayimag.setImageResource(R.drawable.org3_ww6);
                 bg.setImageResource(R.drawable.xue);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -464,7 +615,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim6);
                 break;
             case Xiaoxue:
-                imageView.setImageResource(R.drawable.org3_ww14);
+                todayimag.setImageResource(R.drawable.org3_ww14);
                 bg.setImageResource(R.drawable.xue);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -491,7 +642,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim7);
                 break;
             case Zhongxue:
-                imageView.setImageResource(R.drawable.org3_ww15);
+                todayimag.setImageResource(R.drawable.org3_ww15);
                 bg.setImageResource(R.drawable.xue);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -518,7 +669,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim8);
                 break;
             case Daxue:
-                imageView.setImageResource(R.drawable.org3_ww16);
+                todayimag.setImageResource(R.drawable.org3_ww16);
                 bg.setImageResource(R.drawable.xue);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -545,7 +696,7 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim9);
                 break;
             case Baoxue:
-                imageView.setImageResource(R.drawable.org3_ww17);
+                todayimag.setImageResource(R.drawable.org3_ww17);
                 bg.setImageResource(R.drawable.xue);
                 drop=(RelativeLayout)findViewById(R.id.drop);
                 drop1=(ImageView)findViewById(R.id.drop1);
@@ -572,11 +723,106 @@ public class WeatherActivity extends Activity implements View.OnClickListener {
                 drop.startAnimation(dropanim10);
                 break;
         }
+        String tomarowwether=prefs.getString("weather2","");
+        int weatherstate1=0;
+            if (weatherinfo.contains("小雨"))
+                weatherstate1=Xiaoyu;
+            else if (tomarowwether.contains("中雨"))
+                weatherstate1=Zhongyu;
+            else if (weatherinfo.contains("大雨"))
+                weatherstate1=Dayu;
+            else if (tomarowwether.contains("暴雨"))
+                weatherstate1=Baoyu;
+            else if (tomarowwether.contains("阵雨"))
+                weatherstate1=Zhenyu;
+            else if (tomarowwether.contains("雷阵雨"))
+                weatherstate1=Leizhenyu;
+            else if (tomarowwether.contains("雨夹雪"))
+                weatherstate1=Yujiaxue;
+            else if (tomarowwether.contains("小雪"))
+                weatherstate1=Xiaoxue;
+            else if (tomarowwether.contains("中雪"))
+                weatherstate1=Zhongxue;
+            else if (tomarowwether.contains("大雪"))
+                weatherstate1=Daxue;
+            else if (tomarowwether.contains("暴雪"))
+                weatherstate1=Baoxue;
+            else if(tomarowwether.contains("晴")) {
+                weatherstate1 = Qing;
+            }
+            else if (tomarowwether.contains("阴"))
+                weatherstate1=Yin;
+            else if (tomarowwether.contains("多云"))
+                weatherstate1=Duoyun;
+        switch (weatherstate1){
+            case Qing:
+                tomarrowimag.setImageResource(R.drawable.org3_ww0);
+                break;
+            case Yin:
+                tomarrowimag.setImageResource(R.drawable.org3_ww2);
+
+                break;
+            case Duoyun:
+                tomarrowimag.setImageResource(R.drawable.org3_ww1);
+
+                break;
+            case Xiaoyu:
+                tomarrowimag.setImageResource(R.drawable.org3_ww7);
+
+                break;
+            case Zhongyu:
+                tomarrowimag.setImageResource(R.drawable.org3_ww8);
+
+                break;
+            case Dayu:
+                tomarrowimag.setImageResource(R.drawable.org3_ww19);
+
+                break;
+            case Baoyu:
+                tomarrowimag.setImageResource(R.drawable.org3_ww10);
+
+                break;
+            case Zhenyu:
+                tomarrowimag.setImageResource(R.drawable.org3_ww3);
+
+                break;
+            case Leizhenyu:
+                tomarrowimag.setImageResource(R.drawable.org3_ww4);
+
+                break;
+            case Yujiaxue:
+                tomarrowimag.setImageResource(R.drawable.org3_ww6);
+
+                break;
+            case Xiaoxue:
+                tomarrowimag.setImageResource(R.drawable.org3_ww14);
+
+                break;
+            case Zhongxue:
+                tomarrowimag.setImageResource(R.drawable.org3_ww15);
+
+                break;
+            case Daxue:
+                tomarrowimag.setImageResource(R.drawable.org3_ww16);
+
+                break;
+            case Baoxue:
+                tomarrowimag.setImageResource(R.drawable.org3_ww17);
+
+                break;
+        }
         bg.setVisibility(View.VISIBLE);
         weatherInfoLayout.setVisibility(View.VISIBLE);
-        cityNameText.setVisibility(View.VISIBLE);
+        //cityNameText.setVisibility(View.VISIBLE);
         Intent intent=new Intent(this, AutoUpdateService.class);
         startService(intent);
+    }
+    @Override
+    public void onBackPressed(){
+       if(mDrawerLayout.isDrawerOpen(menulist))
+           mDrawerLayout.closeDrawers();
+        else
+           finish();
     }
 
 }

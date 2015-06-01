@@ -44,9 +44,11 @@
             </intent-filter>
         </activity>
         <activity android:name="activity.WeatherActivity"
+            android:theme="@style/AppTheme"
             android:launchMode="singleTask">
 
         </activity>
+        <activity android:name="activity.Detail"/>
         <service android:name="service.AutoUpdateService"></service>
         <receiver android:name="receiver.AutoUpdateReceiver"></receiver>
         <activity
@@ -70,5 +72,6 @@
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="7KhMQmtzIubyVBqVdbXXU11Z"/>
     </application>
-
+    <uses-sdk android:minSdkVersion="15"
+        android:targetSdkVersion="19"/>
 </manifest>

@@ -5,6 +5,6 @@
     android:repeatCount="infinite"
     android:fromXDelta="-100%p"
     android:toXDelta="100%p"
-    android:fromYDelta="60%p"
-    android:toYDelta="60%p"/>
+    android:fromYDelta="62%p"
+    android:toYDelta="62%p"/>
 </set>

@@ -5,7 +5,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#484E61">
+        android:background="#ff1c73eb">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -18,5 +18,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/list_view"></ListView>
-
 </LinearLayout>
