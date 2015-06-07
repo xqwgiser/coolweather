@@ -17,6 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -54,7 +55,7 @@ import util.Utility;
 /**
  * Created by xqw on 2015/5/5.
  */
-public class WeatherActivity extends ActionBarActivity implements View.OnClickListener {
+public class WeatherActivity extends ActionBarActivity implements View.OnClickListener,View.OnTouchListener {
     public static final int Qing=0;
     public static final int Yin=1;
     public static final int Duoyun=2;
@@ -181,7 +182,9 @@ public class WeatherActivity extends ActionBarActivity implements View.OnClickLi
         today=(RelativeLayout)findViewById(R.id.today);
         tomarrow=(RelativeLayout)findViewById(R.id.tomarrow);
         today.setOnClickListener(this);
+        today.setOnTouchListener(this);
         tomarrow.setOnClickListener(this);
+        tomarrow.setOnTouchListener(this);
         AdView adView=new AdView(this, AdSize.FIT_SCREEN);
         LinearLayout adlayout=(LinearLayout)findViewById(R.id.adLayout);
         adlayout.addView(adView);
@@ -208,22 +211,22 @@ public class WeatherActivity extends ActionBarActivity implements View.OnClickLi
         // getSupportActionBar().setLogo(R.drawable.ic_launcher);
 
 		/* 菜单的监听可以在toolbar里设置，也可以像ActionBar那样，通过下面的两个回调方法来处理 */
-        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.action_settings:
-                        //Toast.makeText(Detail.this, "action_settings", Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.action_share:
-                        //Toast.makeText(Detail.this, "action_share", Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        break;
-                }
-                return true;
-            }
-        });
+//        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                switch (item.getItemId()) {
+//                    case R.id.action_settings:
+//                        //Toast.makeText(Detail.this, "action_settings", Toast.LENGTH_SHORT).show();
+//                        break;
+//                    case R.id.action_share:
+//                        //Toast.makeText(Detail.this, "action_share", Toast.LENGTH_SHORT).show();
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                return true;
+//            }
+//        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         initMenu();
@@ -238,6 +241,25 @@ public class WeatherActivity extends ActionBarActivity implements View.OnClickLi
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.action_share:
+                Toast.makeText(this,"分享暂不可用",Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.refresh_btn:
+                publishText.setText("正在同步...");
+                SharedPreferences preferences=PreferenceManager.getDefaultSharedPreferences(this);
+                String weatherCode=preferences.getString("weather_code","");
+                if(!TextUtils.isEmpty(weatherCode));{
+                queryWeatherInfo(weatherCode);
+            }
+            break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
     @Override
     public void onClick(View v){
@@ -271,6 +293,26 @@ public class WeatherActivity extends ActionBarActivity implements View.OnClickLi
             default:
                 break;
         }
+    }
+    @Override
+    public boolean onTouch(View v, MotionEvent event){
+        switch (v.getId()){
+            case R.id.today:
+                if(event.getAction()==MotionEvent.ACTION_DOWN){
+                    today.setBackgroundResource(R.drawable.airnut_item_bg_alarm_pressed);
+                }else if(event.getAction()==MotionEvent.ACTION_UP){
+                    today.setBackgroundResource(R.drawable.airnut_item_bg);
+                }
+                break;
+            case R.id.tomarrow:
+                if(event.getAction()==MotionEvent.ACTION_DOWN){
+                    tomarrow.setBackgroundResource(R.drawable.airnut_item_bg_alarm_pressed);
+                }else if(event.getAction()==MotionEvent.ACTION_UP){
+                    tomarrow.setBackgroundResource(R.drawable.airnut_item_bg);
+                }
+                break;
+        }
+        return false;
     }
     private void queryWeatherCode(String countyCode){
         String address="http://www.weather.com.cn/data/list3/city"+countyCode+".xml";

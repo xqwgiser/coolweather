@@ -3,8 +3,11 @@ package activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,7 +21,7 @@ import model.Weatherinfo;
 /**
  * Created by xqw on 2015/5/26.
  */
-public class Detail extends Activity implements View.OnClickListener{
+public class Detail extends Activity implements View.OnClickListener,View.OnTouchListener{
     private LinearLayout weatherdetaillayout;
     private LinearLayout bg;
     private TextView city_name;
@@ -174,7 +177,21 @@ public class Detail extends Activity implements View.OnClickListener{
                 startActivity(intent);
                 finish();
                 break;
+            case R.id.refresh:
+                Animation animation1= AnimationUtils.loadAnimation(this, R.anim.btrotate);
+                refresh.setAnimation(animation1);
+                refresh.startAnimation(animation1);
+                break;
         }
+    }
+    @Override
+    public boolean onTouch(View v, MotionEvent event){
+        if(event.getAction()==MotionEvent.ACTION_DOWN){
+            back.setBackgroundResource(R.drawable.ic_chevron_left_grey600_36dp);
+        }else if(event.getAction()==MotionEvent.ACTION_UP){
+            back.setBackgroundResource(R.drawable.ic_chevron_left_white_36dp);
+        }
+        return false;
     }
     @Override
     public void onBackPressed(){
