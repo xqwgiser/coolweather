@@ -318,8 +318,5 @@ public class MyLocationListener implements BDLocationListener {
         String response=stringBuffer.toString();
         return response;
     }
-    public String getSb(){
-        return countycode1;
-    }
 }
 }

@@ -56,6 +56,7 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Light.NoTitleBar" >
         </activity>
+        <activity android:name="activity.About"/>
         <service
             android:name="net.youmi.android.AdService" >
         </service>
